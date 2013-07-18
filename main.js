@@ -108,6 +108,7 @@ function RssPost (settings) {
 	this.description = settings.description
 }
 
+// Main class App
 
 function App ()
 {
