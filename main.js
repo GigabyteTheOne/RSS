@@ -139,8 +139,15 @@ App.prototype.renderLeftMenu = function  () {
 	};
 };
 
-App.prototype.loadContent = function (event) {
-	event.srcElement.data.load(this.onLoadContent);
+App.prototype.loadContent = function (evt) {
+	var target;
+	if (evt.srcElement) {
+		target = evt.srcElement
+	}
+	else {
+		target = evt.target;
+	}
+	target.data.load(this.onLoadContent);
 	return false;
 };
 
