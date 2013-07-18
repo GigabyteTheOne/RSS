@@ -11,14 +11,14 @@ RssItems.prototype.load = function () {
 		for (var i = 0; i < dataArray.length; i++) {
 			var item = dataArray[i];
 			this.items.push(new RssItem({ url: item[0], name: item[1]}));
-		};
+		}
 	}
 	else {
 		this.items.push(new RssItem({ url: "http://habrahabr.ru/rss/hubs/", name: "Habrahabr"}));
 		this.items.push(new RssItem({ url: "http://bash.im/rss/", name: "Bash"}));
 		this.save();
 	}
-}
+};
 
 RssItems.prototype.save = function () {
 	var dataArray = [];
@@ -27,7 +27,7 @@ RssItems.prototype.save = function () {
 		dataArray.push(item);
 	}
 	localStorage.RssItems = JSON.stringify(dataArray);
-}
+};
 
 // class RssItem
 
@@ -35,7 +35,7 @@ function RssItem (settings) {
 	this.url = settings.url;
 	this.name = settings.name;
 	this.posts = [];
-}
+};
 
 RssItem.prototype.load = function (callback) {
 	var feed = new google.feeds.Feed(this.url);
@@ -84,40 +84,42 @@ function RssPost (settings) {
 }
 
 
-// On load 
+function App ()
+{
+	this.rssItems = new RssItems();
+	this.rssItems.load();
 
-var rssItems;
+	this.renderLeftMenu();
 
-(function main () {
-	rssItems = new RssItems();
-	rssItems.load();
-	renderLeftMenu();
+	document.getElementById("add_button").onclick = this.addButtonOnClick.bind(this);	
 
-	document.getElementById("add_button").onclick = addButtonOnClick;
-})();
+	// var button = document.getElementById("add_button");
+	// var evt = Utils.addEvent(button, 'click');
+	// console.log(evt);
+};
 
-function renderLeftMenu () {
+App.prototype.renderLeftMenu = function  () {
 	var ul = document.getElementById("rss_items");
 	ul.innerHTML = "";
-	for (var i = 0; i < rssItems.items.length; i++) {
-		var rssItem = rssItems.items[i];
+	for (var i = 0; i < this.rssItems.items.length; i++) {
+		var rssItem = this.rssItems.items[i];
 		var li = document.createElement("li");
 		var a = document.createElement("a");
 		a.innerHTML = (rssItem.name) ? rssItem.name : rssItem.url;
 		a.href = "#";
-		a.onclick = loadContent;
+		a.onclick = this.loadContent.bind(this);
 		a.data = rssItem;
 		li.appendChild(a);
 		ul.appendChild(li);
 	};
 };
 
-function loadContent (args) {
-	args.srcElement.data.load(onLoadContent);
+App.prototype.loadContent = function (event) {
+	event.srcElement.data.load(this.onLoadContent);
 	return false;
-}
+};
 
-function onLoadContent (sender, args) {
+App.prototype.onLoadContent = function (sender, args) {
 	var content = document.getElementById("content");
 	content.innerHTML = "";
 
@@ -140,20 +142,25 @@ function onLoadContent (sender, args) {
 		ul.appendChild(li);
 	};
 	content.appendChild(ul);
-}
+};
 
-function addButtonOnClick () {
+App.prototype.addButtonOnClick = function () {
 	var input = document.getElementById("url_textbox");
 	if (input.value != "") {
 		var url = input.value;
 		input.value = "";
 		var rssItem = new RssItem({ url: url});
-		rssItem.loadInfo(onItemAdded);
+		rssItem.loadInfo(this.onItemAdded.bind(this));
 	}
-}
+};
 
-function onItemAdded (sender, args) {
-	rssItems.items.push(sender);
-	rssItems.save();
-	renderLeftMenu();
-}
+App.prototype.onItemAdded = function (sender, args) {
+	this.rssItems.items.push(sender);
+	this.rssItems.save();
+	this.renderLeftMenu();
+};
+
+// On load 
+(function main () {
+	var app = new App();
+})();
